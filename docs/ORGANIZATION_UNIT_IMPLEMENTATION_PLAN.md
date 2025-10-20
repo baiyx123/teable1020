@@ -438,7 +438,7 @@ Query: {
 }
 ```
 
-### 2.7 记录创建时自动填充
+### 2.7 记录创建时自动填充（使用主部门）
 
 ```typescript
 // apps/nestjs-backend/src/features/record/record.service.ts
@@ -452,25 +452,29 @@ async createRecord(
   const userOrg = await this.prismaService.userOrganization.findFirst({
     where: { 
       userId,
-      isPrimary: true,
+      isPrimary: true,  // 只查找主部门
     },
     include: {
       department: true,
     },
   });
   
-  const departmentInfo = userOrg ? {
+  if (!userOrg) {
+    throw new Error('用户没有主部门，无法创建记录');
+  }
+  
+  const departmentInfo = {
     id: userOrg.department.id,
     name: userOrg.department.name,
     code: userOrg.department.code,
     path: userOrg.department.path,
-  } : null;
+  };
   
-  // 创建记录时自动填充
+  // 创建记录时自动填充主部门信息
   const record = {
     __id: generateRecordId(),
     __created_by: userId,
-    __created_by_department: JSON.stringify(departmentInfo),  // 新增
+    __created_by_department: JSON.stringify(departmentInfo),  // 使用主部门
     __created_time: new Date(),
     __version: 1,
     ...convertFieldsToDbFormat(fields),
@@ -480,7 +484,199 @@ async createRecord(
 }
 ```
 
-### 2.8 权限控制扩展
+### 2.8 查询权限实现（用户可查看所有归属部门的数据）
+
+#### 2.8.1 获取用户的所有部门编码
+
+```typescript
+// apps/nestjs-backend/src/features/department/department.service.ts
+
+async getUserDepartmentCodes(userId: string, organizationId: string): Promise<string[]> {
+  const userDepartments = await this.prismaService.userOrganization.findMany({
+    where: {
+      userId,
+      organizationId,
+      leaveTime: null,  // 排除已离开的部门
+    },
+    include: {
+      department: {
+        select: {
+          code: true,
+        },
+      },
+    },
+  });
+  
+  return userDepartments.map(ud => ud.department.code);
+}
+```
+
+#### 2.8.2 基于多部门的记录查询（使用 OR ... LIKE）
+
+```typescript
+// apps/nestjs-backend/src/features/record/record.service.ts
+
+async getRecordsForUser(
+  tableId: string,
+  userId: string,
+  organizationId: string,
+  options?: {
+    includeChildren?: boolean;  // 是否包含子部门
+    additionalFilters?: any;
+  }
+): Promise<IRecord[]> {
+  const dbTableName = `table_${tableId}`;
+  
+  // 1. 获取用户的所有部门编码
+  const userDeptCodes = await this.departmentService.getUserDepartmentCodes(
+    userId,
+    organizationId
+  );
+  
+  if (userDeptCodes.length === 0) {
+    return [];  // 用户没有归属部门，返回空
+  }
+  
+  // 2. 构建查询条件
+  let whereConditions: string[];
+  
+  if (options?.includeChildren) {
+    // 包含子部门：使用 path LIKE 查询
+    // WHERE (path LIKE '/001/%' OR path LIKE '/002/%' OR ...)
+    whereConditions = userDeptCodes.map(code => 
+      `json_extract(__created_by_department, '$.path') LIKE '/${code}/%'`
+    );
+  } else {
+    // 不包含子部门：精确匹配编码
+    // WHERE (code = '001' OR code = '002' OR ...)
+    whereConditions = userDeptCodes.map(code => 
+      `json_extract(__created_by_department, '$.code') = '${code}'`
+    );
+  }
+  
+  // 3. 组合成 OR 条件
+  const deptFilter = `(${whereConditions.join(' OR ')})`;
+  
+  // 4. 构建完整 SQL
+  const sql = `
+    SELECT * FROM ${dbTableName}
+    WHERE ${deptFilter}
+      AND __deleted_time IS NULL
+    ${options?.additionalFilters ? `AND ${options.additionalFilters}` : ''}
+    ORDER BY __created_time DESC
+  `;
+  
+  return this.prismaService.$queryRawUnsafe(sql);
+}
+```
+
+#### 2.8.3 查询示例
+
+**场景：用户张三属于 3 个部门**
+```typescript
+// 张三的部门：
+// - 技术部 (001001) - 主部门
+// - 市场部 (001002) - 兼职
+// - 产品部 (002001) - 兼职
+
+// 查询张三能看到的所有记录（不含子部门）
+const sql = `
+  SELECT * FROM table_xxx
+  WHERE (
+    json_extract(__created_by_department, '$.code') = '001001'
+    OR json_extract(__created_by_department, '$.code') = '001002'
+    OR json_extract(__created_by_department, '$.code') = '002001'
+  )
+  AND __deleted_time IS NULL
+`;
+
+// 查询张三能看到的所有记录（含子部门）
+const sql = `
+  SELECT * FROM table_xxx
+  WHERE (
+    json_extract(__created_by_department, '$.path') LIKE '/001001/%'
+    OR json_extract(__created_by_department, '$.path') LIKE '/001002/%'
+    OR json_extract(__created_by_department, '$.path') LIKE '/002001/%'
+  )
+  AND __deleted_time IS NULL
+`;
+```
+
+#### 2.8.4 性能优化建议
+
+**1. 添加虚拟列和索引**
+```sql
+-- PostgreSQL 示例
+ALTER TABLE table_xxx 
+ADD COLUMN __created_by_dept_code TEXT 
+GENERATED ALWAYS AS ((__created_by_department->>'code')) STORED;
+
+CREATE INDEX idx_created_by_dept_code ON table_xxx(__created_by_dept_code);
+
+-- 查询时使用虚拟列
+SELECT * FROM table_xxx
+WHERE __created_by_dept_code IN ('001001', '001002', '002001');
+```
+
+**2. 使用 GIN 索引（PostgreSQL）**
+```sql
+-- 为 JSON 字段创建 GIN 索引
+CREATE INDEX idx_created_by_dept_gin ON table_xxx 
+USING GIN (__created_by_department);
+
+-- 查询自动使用索引
+SELECT * FROM table_xxx
+WHERE __created_by_department @> '{"code": "001001"}';
+```
+
+**3. 缓存用户部门信息**
+```typescript
+// 在用户登录时缓存到 Redis
+await redis.set(
+  `user:${userId}:departments`,
+  JSON.stringify(userDeptCodes),
+  'EX',
+  3600  // 1小时过期
+);
+
+// 查询时从缓存读取
+const cachedDepts = await redis.get(`user:${userId}:departments`);
+const userDeptCodes = cachedDepts ? JSON.parse(cachedDepts) : await fetchFromDb();
+```
+
+### 2.9 视图过滤器集成
+
+在视图的过滤功能中集成部门过滤：
+
+```typescript
+// packages/core/src/models/view/filter/filter.ts
+
+// 添加"当前用户部门"过滤器
+export interface ICurrentUserDepartmentsFilter {
+  fieldId: string;  // 创建单位字段ID
+  operator: 'isCurrentUserDepartments';  // 特殊操作符
+  value: {
+    includeChildren?: boolean;  // 是否包含子部门
+  };
+}
+
+// 在后端解析时自动替换为用户的实际部门
+async function parseFilter(filter: IFilter, userId: string) {
+  if (filter.operator === 'isCurrentUserDepartments') {
+    const userDeptCodes = await getUserDepartmentCodes(userId);
+    
+    return {
+      fieldId: filter.fieldId,
+      operator: 'anyOf',  // 转换为 anyOf 操作符
+      value: userDeptCodes,
+    };
+  }
+  
+  return filter;
+}
+```
+
+### 2.10 权限控制扩展
 
 可以基于单位实现更细粒度的权限控制：
 
@@ -740,14 +936,152 @@ const viewFilter = {
 - 创建单位时自动创建相关资源
 - 单位级别的默认配置
 
-## 八、总结
+## 八、核心策略说明
+
+### 8.1 多部门归属策略
+
+**明确的设计决策**：
+
+1. ✅ **用户可以属于多个部门**
+   - 通过 `UserOrganization` 表管理用户与部门的多对多关系
+   - 每个用户必须有一个**主部门**（`isPrimary = true`）
+   - 可以有多个兼职部门（`isPrimary = false`）
+
+2. ✅ **创建记录时使用主部门**
+   ```typescript
+   // 创建记录时，自动获取并使用用户的主部门
+   const primaryDept = await findPrimaryDepartment(userId);
+   record.__created_by_department = primaryDept;
+   ```
+
+3. ✅ **查询时可以看所有归属部门的数据**
+   ```sql
+   -- 使用 OR ... LIKE 查询所有归属部门的数据
+   SELECT * FROM table_xxx
+   WHERE (
+     json_extract(__created_by_department, '$.code') = '001001'  -- 主部门
+     OR json_extract(__created_by_department, '$.code') = '001002'  -- 兼职部门1
+     OR json_extract(__created_by_department, '$.code') = '002001'  -- 兼职部门2
+   )
+   ```
+
+### 8.2 查询策略对比
+
+| 策略 | SQL 示例 | 性能 | 使用场景 |
+|------|---------|------|---------|
+| **精确匹配** | `code = '001001'` | ⭐⭐⭐ | 只看指定部门 |
+| **包含子部门** | `path LIKE '/001001/%'` | ⭐⭐ | 部门主管查看下属部门 |
+| **多部门OR查询** | `code IN ('001', '002')` | ⭐⭐⭐ | 用户查看自己所有部门（推荐） |
+| **多部门OR LIKE** | `path LIKE '/001/%' OR path LIKE '/002/%'` | ⭐⭐ | 用户查看所有部门含子部门 |
+
+**本方案采用**：多部门 OR 查询（精确匹配）+ 可选的子部门查询
+
+### 8.3 实现要点
+
+```typescript
+// 1. 用户部门缓存（提高性能）
+class UserDepartmentCache {
+  async get(userId: string): Promise<string[]> {
+    // 从 Redis 读取缓存
+    const cached = await redis.get(`user:${userId}:depts`);
+    if (cached) return JSON.parse(cached);
+    
+    // 从数据库查询
+    const depts = await db.userOrganization.findMany({
+      where: { userId },
+      select: { department: { select: { code: true } } }
+    });
+    
+    const codes = depts.map(d => d.department.code);
+    
+    // 缓存 1 小时
+    await redis.setex(`user:${userId}:depts`, 3600, JSON.stringify(codes));
+    
+    return codes;
+  }
+  
+  // 当用户部门变更时，清除缓存
+  async invalidate(userId: string) {
+    await redis.del(`user:${userId}:depts`);
+  }
+}
+
+// 2. 构建查询条件
+function buildDepartmentFilter(deptCodes: string[], includeChildren = false): string {
+  if (includeChildren) {
+    // 包含子部门：使用 LIKE
+    return deptCodes.map(code => 
+      `json_extract(__created_by_department, '$.path') LIKE '/${code}/%'`
+    ).join(' OR ');
+  } else {
+    // 不包含子部门：精确匹配（性能更好）
+    return deptCodes.map(code => 
+      `json_extract(__created_by_department, '$.code') = '${code}'`
+    ).join(' OR ');
+  }
+}
+
+// 3. 应用到记录查询
+async function getRecords(userId: string, includeChildren = false) {
+  const deptCodes = await userDeptCache.get(userId);
+  const filter = buildDepartmentFilter(deptCodes, includeChildren);
+  
+  const sql = `
+    SELECT * FROM table_xxx
+    WHERE (${filter})
+      AND __deleted_time IS NULL
+  `;
+  
+  return db.$queryRawUnsafe(sql);
+}
+```
+
+### 8.4 性能优化关键点
+
+1. **缓存用户部门列表**
+   - Redis 缓存，减少数据库查询
+   - 部门变更时失效缓存
+
+2. **使用虚拟列和索引**
+   ```sql
+   -- 提取 JSON 中的 code 为虚拟列
+   ALTER TABLE table_xxx 
+   ADD COLUMN __dept_code AS (json_extract(__created_by_department, '$.code'));
+   
+   CREATE INDEX idx_dept_code ON table_xxx(__dept_code);
+   
+   -- 查询时自动使用索引
+   SELECT * FROM table_xxx
+   WHERE __dept_code IN ('001001', '001002', '002001');
+   ```
+
+3. **限制部门数量**
+   - 建议每个用户的部门数 ≤ 10 个
+   - 避免 OR 条件过多影响性能
+
+4. **分页查询**
+   - 大数据量时必须分页
+   - 使用 LIMIT 和 OFFSET
+
+## 九、总结
 
 该方案基于现有的 Organization 和 Department 概念，通过以下方式实现单位数据过滤：
 
+### 核心设计原则
+
 1. **编码层级**：使用类似 `001001` 的编码表示单位层级
-2. **路径存储**：使用 `/001/001001/` 格式加速查询
-3. **自动字段**：创建记录时自动保存创建人的单位信息
-4. **LIKE 查询**：通过路径的 LIKE 查询实现包含子单位的过滤
+2. **路径存储**：使用 `/001/001001/` 格式加速子部门查询
+3. **主部门机制**：每个用户有唯一的主部门，创建记录时使用主部门
+4. **多部门查询**：使用 OR 条件查询用户所有归属部门的数据
+5. **性能优化**：通过缓存、索引、虚拟列等手段保证查询效率
+
+### 关键特性
+
+✅ **灵活性**：支持用户多部门归属，适应复杂组织架构  
+✅ **明确性**：记录归属明确（创建时的主部门），便于统计  
+✅ **权限性**：可查看所有归属部门的数据，支持跨部门协作  
+✅ **性能**：通过多种优化手段保证查询性能  
+✅ **可扩展**：可基于此实现更复杂的权限控制
 
 这个设计既保持了灵活性，又确保了查询性能，同时与现有系统架构良好集成。
 
