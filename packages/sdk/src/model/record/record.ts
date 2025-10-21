@@ -96,15 +96,18 @@ export class Record extends RecordCore {
   ) {
     const oldCellValue = this.fields[fieldId];
     const cellSaveStatus = useCellSaveStatus.getState();
-    
+
     try {
+      // 清除之前的错误状态（如果存在）
+      cellSaveStatus.clearState(this.id, fieldId);
+
       // 标记为"保存中" - 显示蓝色边框
       cellSaveStatus.setSaving(this.id, fieldId);
-      
+
       // 乐观更新本地
       this.onCommitLocal(fieldId, cellValue);
       this.fields[fieldId] = cellValue;
-      
+
       // 发送到服务器
       const [, tableId] = this.doc.collection.split('_');
       const res = await updateRecord(tableId, this.doc.id, {
@@ -116,10 +119,10 @@ export class Record extends RecordCore {
           },
         },
       });
-      
+
       // 标记为"已保存" - 绿色边框闪一下后消失
       cellSaveStatus.setSaved(this.id, fieldId);
-      
+
       // 更新计算字段
       const computedField = Object.keys(this.fieldMap).filter(
         (fieldId) =>

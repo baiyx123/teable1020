@@ -365,7 +365,7 @@ export const drawCells = (
     if (!recordId || !fieldId) return null;
     try {
       // Dynamic import to avoid bundling issues
-      const { useCellSaveStatus } = require('../../../hooks/use-cell-save-status');
+      const { useCellSaveStatus } = require('../../../../hooks/use-cell-save-status');
       return useCellSaveStatus.getState().cellStates[`${recordId}-${fieldId}`] || null;
     } catch {
       return null;
@@ -386,6 +386,22 @@ export const drawCells = (
     }
   };
 
+  // 专门绘制单元格边框的函数
+  const drawCellBorder = (ctx: CanvasRenderingContext2D, cellProps: ICellDrawerProps) => {
+    const { x, y, width, height, recordId, fieldId } = cellProps;
+    const strokeColor = getCellStroke({ recordId, fieldId });
+
+    if (strokeColor && strokeColor !== cellLineColor) {
+      ctx.save();
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2; // 增加边框宽度，确保可见
+      ctx.beginPath();
+      ctx.rect(x, y, width, height);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+
   // Render freeze region
   drawClipRegion(
     mainCtx,
@@ -398,19 +414,26 @@ export const drawCells = (
     (ctx: CanvasRenderingContext2D) => {
       freezeCellPropList.forEach((cellProps) => {
         const { x, y, width, height, fill } = cellProps;
-        drawRect(ctx, {
-          x,
-          y,
-          width,
-          height,
-          fill,
-          stroke: getCellStroke(cellProps),
-        });
+        // 只绘制填充，不绘制边框
+        if (fill) {
+          drawRect(ctx, {
+            x,
+            y,
+            width,
+            height,
+            fill,
+          });
+        }
       });
       ctx.font = `${fontSizeXS}px ${fontFamily}`;
       rowHeaderPropList.forEach((rowHeaderProps) => drawRowHeader(ctx, rowHeaderProps));
       freezeGroupRowList.forEach((props) => drawGroupRow(ctx, props));
       groupRowHeaderList.forEach((props) => drawGroupRowHeader(ctx, props));
+
+      // 最后绘制边框，确保在最上层
+      freezeCellPropList.forEach((cellProps) => {
+        drawCellBorder(ctx, cellProps);
+      });
     }
   );
 
@@ -426,16 +449,23 @@ export const drawCells = (
     (ctx: CanvasRenderingContext2D) => {
       otherCellPropList.forEach((cellProps) => {
         const { x, y, width, height, fill } = cellProps;
-        drawRect(ctx, {
-          x,
-          y,
-          width,
-          height,
-          fill,
-          stroke: getCellStroke(cellProps),
-        });
+        // 只绘制填充，不绘制边框
+        if (fill) {
+          drawRect(ctx, {
+            x,
+            y,
+            width,
+            height,
+            fill,
+          });
+        }
       });
       groupRowList.forEach((props) => drawGroupRow(ctx, props));
+
+      // 最后绘制边框，确保在最上层
+      otherCellPropList.forEach((cellProps) => {
+        drawCellBorder(ctx, cellProps);
+      });
     }
   );
 
