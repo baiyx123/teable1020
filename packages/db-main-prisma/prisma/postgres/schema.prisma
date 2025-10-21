@@ -190,6 +190,11 @@ model User {
   lastModifiedTime DateTime? @updatedAt @map("last_modified_time")
   permanentDeletedTime DateTime? @map("permanent_deleted_time")
   refMeta          String?   @map("ref_meta")
+  
+  // 主部门信息
+  primaryDepartmentId    String?   @map("primary_department_id")
+  primaryDepartmentName  String?   @map("primary_department_name")
+  primaryDepartmentCode  String?   @map("primary_department_code")
 
   accounts         Account[]
   @@map("users")
@@ -673,4 +678,23 @@ model Waitlist {
   createdTime    DateTime  @default(now()) @map("created_time")
 
   @@map("waitlist")
+}
+
+model Department {
+  id               String    @id @default(cuid())
+  name             String
+  code             String    @unique
+  parentId         String?   @map("parent_id")
+  path             String?
+  level            Int       @default(1)
+  description      String?
+  status           String    @default("active")
+  createdTime      DateTime  @default(now()) @map("created_time")
+  lastModifiedTime DateTime? @updatedAt @map("last_modified_time")
+  createdBy        String    @map("created_by")
+  lastModifiedBy   String?   @map("last_modified_by")
+
+  @@index([status])
+  @@index([parentId])
+  @@map("department")
 }

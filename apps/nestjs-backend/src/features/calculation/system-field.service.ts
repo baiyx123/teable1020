@@ -25,10 +25,31 @@ export class SystemFieldService {
   ) {
     if (!recordIds.length) return;
 
+    // 获取用户的主部门信息
+    const user = await this.prismaService.txClient().user.findUnique({
+      where: { id: userId },
+      select: {
+        primaryDepartmentId: true,
+        primaryDepartmentName: true,
+        primaryDepartmentCode: true,
+      },
+    });
+
+    // 构建部门信息
+    let departmentInfo = null;
+    if (user?.primaryDepartmentId) {
+      departmentInfo = JSON.stringify({
+        id: user.primaryDepartmentId,
+        name: user.primaryDepartmentName,
+        code: user.primaryDepartmentCode,
+      });
+    }
+
     const nativeQuery = this.knex(dbTableName)
       .update({
         __last_modified_time: timeStr,
         __last_modified_by: userId,
+        __last_modified_by_department: departmentInfo,
       })
       .whereIn('__id', recordIds)
       .toQuery();
@@ -68,11 +89,36 @@ export class SystemFieldService {
       where: {
         tableId,
         deletedTime: null,
-        type: { in: [FieldType.LastModifiedTime, FieldType.LastModifiedBy] },
+        type: {
+          in: [
+            FieldType.LastModifiedTime,
+            FieldType.LastModifiedBy,
+            FieldType.LastModifiedByDepartment,
+          ],
+        },
       },
     });
 
     if (!fieldsRaw.length) return records;
+
+    // 获取用户的主部门信息（用于 LastModifiedByDepartment 字段）
+    const userDept = await this.prismaService.txClient().user.findUnique({
+      where: { id: user.id },
+      select: {
+        primaryDepartmentId: true,
+        primaryDepartmentName: true,
+        primaryDepartmentCode: true,
+      },
+    });
+
+    let deptCellValue = null;
+    if (userDept?.primaryDepartmentId) {
+      deptCellValue = {
+        id: userDept.primaryDepartmentId,
+        name: userDept.primaryDepartmentName,
+        code: userDept.primaryDepartmentCode,
+      };
+    }
 
     const systemRecordFields = fieldsRaw.reduce<{ [fieldId: string]: unknown }>((pre, fieldRaw) => {
       const field = createFieldInstanceByRaw(fieldRaw);
@@ -87,6 +133,10 @@ export class SystemFieldService {
           title: user.name,
           email: user.email,
         });
+      }
+
+      if (type === FieldType.LastModifiedByDepartment) {
+        pre[field[fieldKeyType]] = deptCellValue;
       }
       return pre;
     }, {});

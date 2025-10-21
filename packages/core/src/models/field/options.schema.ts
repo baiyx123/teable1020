@@ -19,6 +19,9 @@ import {
   longTextFieldOptionsSchema,
   rollupFieldOptionsSchema,
   buttonFieldOptionsSchema,
+  departmentFieldOptionsSchema,
+  createdByDepartmentFieldOptionsSchema,
+  lastModifiedByDepartmentFieldOptionsSchema,
 } from './derivate';
 
 export function safeParseOptions(fieldType: FieldType, value: unknown) {
@@ -61,6 +64,12 @@ export function safeParseOptions(fieldType: FieldType, value: unknown) {
       return rollupFieldOptionsSchema.safeParse(value);
     case FieldType.Button:
       return buttonFieldOptionsSchema.safeParse(value);
+    case FieldType.Department:
+      return departmentFieldOptionsSchema.safeParse(value);
+    case FieldType.CreatedByDepartment:
+      return createdByDepartmentFieldOptionsSchema.safeParse(value);
+    case FieldType.LastModifiedByDepartment:
+      return lastModifiedByDepartmentFieldOptionsSchema.safeParse(value);
     default:
       assertNever(fieldType);
   }

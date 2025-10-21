@@ -924,6 +924,26 @@ export class RecordService {
       {} as Record<string, IFieldInstance>
     );
 
+    // 获取用户的主部门信息
+    const user = await this.prismaService.txClient().user.findUnique({
+      where: { id: userId },
+      select: {
+        primaryDepartmentId: true,
+        primaryDepartmentName: true,
+        primaryDepartmentCode: true,
+      },
+    });
+
+    // 构建部门信息
+    let departmentInfo = null;
+    if (user?.primaryDepartmentId) {
+      departmentInfo = JSON.stringify({
+        id: user.primaryDepartmentId,
+        name: user.primaryDepartmentName,
+        code: user.primaryDepartmentCode,
+      });
+    }
+
     const newRecords = records.map((record) => {
       const fieldsValues: Record<string, unknown> = {};
       Object.entries(record.fields).forEach(([fieldId, value]) => {
@@ -933,6 +953,7 @@ export class RecordService {
       return {
         __id: generateRecordId(),
         __created_by: userId,
+        __created_by_department: departmentInfo,
         __version: 1,
         ...fieldsValues,
       };
@@ -1007,6 +1028,26 @@ export class RecordService {
 
     const allViewIndexes = await this.getAllViewIndexesField(dbTableName);
 
+    // 获取用户的主部门信息
+    const user = await this.prismaService.txClient().user.findUnique({
+      where: { id: userId },
+      select: {
+        primaryDepartmentId: true,
+        primaryDepartmentName: true,
+        primaryDepartmentCode: true,
+      },
+    });
+
+    // 构建部门信息
+    let departmentInfo = null;
+    if (user?.primaryDepartmentId) {
+      departmentInfo = JSON.stringify({
+        id: user.primaryDepartmentId,
+        name: user.primaryDepartmentName,
+        code: user.primaryDepartmentCode,
+      });
+    }
+
     const validationFields = fieldRaws.filter((field) => field.notNull || field.unique);
 
     const snapshots = records
@@ -1044,7 +1085,9 @@ export class RecordService {
         return removeUndefined({
           __id: snapshot.id,
           __created_by: snapshot.createdBy || userId,
+          __created_by_department: departmentInfo || undefined,
           __last_modified_by: snapshot.lastModifiedBy || undefined,
+          __last_modified_by_department: departmentInfo || undefined,
           __created_time: snapshot.createdTime || undefined,
           __last_modified_time: snapshot.lastModifiedTime || undefined,
           __auto_number: snapshot.autoNumber == null ? undefined : snapshot.autoNumber,

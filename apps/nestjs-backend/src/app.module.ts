@@ -15,6 +15,7 @@ import { ChatModule } from './features/chat/chat.module';
 import { CollaboratorModule } from './features/collaborator/collaborator.module';
 import { CommentOpenApiModule } from './features/comment/comment-open-api.module';
 import { DashboardModule } from './features/dashboard/dashboard.module';
+import { DepartmentModule } from './features/department/department.module';
 import { ExportOpenApiModule } from './features/export/open-api/export-open-api.module';
 import { FieldOpenApiModule } from './features/field/open-api/field-open-api.module';
 import { HealthModule } from './features/health/health.module';
@@ -79,6 +80,7 @@ export const appModules = {
     OAuthModule,
     TrashModule,
     DashboardModule,
+    DepartmentModule,
     CommentOpenApiModule,
     OrganizationModule,
     AiModule,

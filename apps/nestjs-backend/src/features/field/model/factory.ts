@@ -21,6 +21,9 @@ import { RollupFieldDto } from './field-dto/rollup-field.dto';
 import { SingleLineTextFieldDto } from './field-dto/single-line-text-field.dto';
 import { SingleSelectFieldDto } from './field-dto/single-select-field.dto';
 import { UserFieldDto } from './field-dto/user-field.dto';
+import { DepartmentFieldDto } from './field-dto/department-field.dto';
+import { CreatedByDepartmentFieldDto } from './field-dto/created-by-department-field.dto';
+import { LastModifiedByDepartmentFieldDto } from './field-dto/last-modified-by-department-field.dto';
 
 export function rawField2FieldObj(fieldRaw: Field): IFieldVo {
   return {
@@ -90,6 +93,12 @@ export function createFieldInstanceByVo(field: IFieldVo) {
       return plainToInstance(LastModifiedByFieldDto, field);
     case FieldType.Button:
       return plainToInstance(ButtonFieldDto, field);
+    case FieldType.Department:
+      return plainToInstance(DepartmentFieldDto, field);
+    case FieldType.CreatedByDepartment:
+      return plainToInstance(CreatedByDepartmentFieldDto, field);
+    case FieldType.LastModifiedByDepartment:
+      return plainToInstance(LastModifiedByDepartmentFieldDto, field);
     default:
       assertNever(field.type);
   }

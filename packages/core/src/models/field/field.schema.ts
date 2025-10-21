@@ -30,6 +30,9 @@ import {
   createdByFieldOptionsSchema,
   lastModifiedByFieldOptionsSchema,
   buttonFieldOptionsSchema,
+  departmentFieldOptionsSchema,
+  createdByDepartmentFieldOptionsSchema,
+  lastModifiedByDepartmentFieldOptionsSchema,
 } from './derivate';
 
 import { unionFormattingSchema } from './formatting';
@@ -78,6 +81,9 @@ export const unionFieldOptions = z.union([
   createdByFieldOptionsSchema.strict(),
   lastModifiedByFieldOptionsSchema.strict(),
   buttonFieldOptionsSchema.strict(),
+  departmentFieldOptionsSchema.strict(),
+  createdByDepartmentFieldOptionsSchema.strict(),
+  lastModifiedByDepartmentFieldOptionsSchema.strict(),
 ]);
 
 export const unionFieldOptionsVoSchema = z.union([
@@ -291,6 +297,12 @@ export const getOptionsSchema = (type: FieldType) => {
       return lastModifiedByFieldOptionsSchema;
     case FieldType.Button:
       return buttonFieldOptionsSchema;
+    case FieldType.Department:
+      return departmentFieldOptionsSchema;
+    case FieldType.CreatedByDepartment:
+      return createdByDepartmentFieldOptionsSchema;
+    case FieldType.LastModifiedByDepartment:
+      return lastModifiedByDepartmentFieldOptionsSchema;
     default:
       assertNever(type);
   }

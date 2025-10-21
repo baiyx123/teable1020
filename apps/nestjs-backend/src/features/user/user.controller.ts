@@ -61,4 +61,10 @@ export class UserController {
     const userId = this.cls.get('user.id');
     return this.userService.updateNotifyMeta(userId, updateUserNotifyMetaRo);
   }
+
+  @Patch('primary-department')
+  async setPrimaryDepartment(@Body() body: { departmentId: string }): Promise<void> {
+    const userId = this.cls.get('user.id');
+    return this.userService.setPrimaryDepartment(userId, body.departmentId);
+  }
 }

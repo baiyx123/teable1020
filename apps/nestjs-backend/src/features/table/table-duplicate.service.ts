@@ -183,6 +183,7 @@ export class TableDuplicateService {
       '__created_time',
       '__last_modified_time',
       '__last_modified_by',
+      '__last_modified_by_department',
     ];
 
     const excludeFields = await this.prismaService.txClient().field.findMany({

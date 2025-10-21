@@ -242,6 +242,52 @@ export class UserService {
     });
   }
 
+  // 设置用户主部门
+  async setPrimaryDepartment(userId: string, departmentId: string) {
+    const dept = await this.prismaService.txClient().department.findUnique({
+      where: { id: departmentId },
+    });
+
+    if (!dept) {
+      throw new NotFoundException('部门不存在');
+    }
+
+    if (dept.status !== 'active') {
+      throw new BadRequestException('只能设置活跃状态的部门');
+    }
+
+    return await this.prismaService.txClient().user.update({
+      where: { id: userId },
+      data: {
+        primaryDepartmentId: dept.id,
+        primaryDepartmentName: dept.name,
+        primaryDepartmentCode: dept.code,
+      },
+    });
+  }
+
+  // 获取用户的主部门
+  async getPrimaryDepartment(userId: string) {
+    const user = await this.prismaService.txClient().user.findUnique({
+      where: { id: userId },
+      select: {
+        primaryDepartmentId: true,
+        primaryDepartmentName: true,
+        primaryDepartmentCode: true,
+      },
+    });
+
+    if (!user?.primaryDepartmentId) {
+      return null;
+    }
+
+    return {
+      id: user.primaryDepartmentId,
+      name: user.primaryDepartmentName!,
+      code: user.primaryDepartmentCode!,
+    };
+  }
+
   private async generateDefaultAvatar(id: string) {
     const path = join(StorageAdapter.getDir(UploadType.Avatar), id);
     const bucket = StorageAdapter.getBucket(UploadType.Avatar);

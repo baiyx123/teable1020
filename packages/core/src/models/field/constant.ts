@@ -19,6 +19,9 @@ export enum FieldType {
   LastModifiedBy = 'lastModifiedBy',
   AutoNumber = 'autoNumber',
   Button = 'button',
+  Department = 'department',
+  CreatedByDepartment = 'createdByDepartment',
+  LastModifiedByDepartment = 'lastModifiedByDepartment',
 }
 
 export enum DbFieldType {
@@ -71,6 +74,9 @@ export const PRIMARY_SUPPORTED_TYPES = new Set([
   FieldType.CreatedBy,
   FieldType.LastModifiedBy,
   FieldType.AutoNumber,
+  FieldType.Department,
+  FieldType.CreatedByDepartment,
+  FieldType.LastModifiedByDepartment,
 ]);
 
 export const IMPORT_SUPPORTED_TYPES = [
@@ -83,6 +89,7 @@ export const IMPORT_SUPPORTED_TYPES = [
   FieldType.MultipleSelect,
   FieldType.SingleSelect,
   FieldType.User,
+  FieldType.Department,
 ];
 
 export const UNIQUE_VALIDATION_FIELD_TYPES = new Set([

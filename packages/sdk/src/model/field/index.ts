@@ -18,3 +18,6 @@ export * from './auto-number.field';
 export * from './user.field';
 export * from './last-modified-by.field';
 export * from './created-by.field';
+export * from './department.field';
+export * from './created-by-department.field';
+export * from './last-modified-by-department.field';

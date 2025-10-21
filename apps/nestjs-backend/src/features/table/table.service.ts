@@ -101,7 +101,9 @@ export class TableService implements IReadonlyAdapterService {
       table.dateTime('__created_time').defaultTo(this.knex.fn.now()).notNullable();
       table.dateTime('__last_modified_time');
       table.string('__created_by').notNullable();
+      table.text('__created_by_department');  // JSON 格式存储部门信息
       table.string('__last_modified_by');
+      table.text('__last_modified_by_department');  // JSON 格式存储部门信息
       table.integer('__version').notNullable();
     });
 

@@ -21,6 +21,9 @@ import { RollupField } from './rollup.field';
 import { SingleLineTextField } from './single-line-text.field';
 import { SingleSelectField } from './single-select.field';
 import { UserField } from './user.field';
+import { DepartmentField } from './department.field';
+import { CreatedByDepartmentField } from './created-by-department.field';
+import { LastModifiedByDepartmentField } from './last-modified-by-department.field';
 
 export function createFieldInstance(field: IFieldVo, doc?: Doc<IFieldVo>) {
   const instance = (() => {
@@ -63,6 +66,12 @@ export function createFieldInstance(field: IFieldVo, doc?: Doc<IFieldVo>) {
         return plainToInstance(LastModifiedByField, field);
       case FieldType.Button:
         return plainToInstance(ButtonField, field);
+      case FieldType.Department:
+        return plainToInstance(DepartmentField, field);
+      case FieldType.CreatedByDepartment:
+        return plainToInstance(CreatedByDepartmentField, field);
+      case FieldType.LastModifiedByDepartment:
+        return plainToInstance(LastModifiedByDepartmentField, field);
       default:
         assertNever(field.type);
     }
