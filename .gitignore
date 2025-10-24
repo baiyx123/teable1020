@@ -71,3 +71,4 @@ pnpm-debug.log*
 # LocalStorage assets
 
 **/.assetsclash.out
+build.log

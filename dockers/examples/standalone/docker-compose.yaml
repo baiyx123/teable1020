@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   teable:
-    image: registry.cn-shenzhen.aliyuncs.com/teable/teable-community:latest
+    image: teable-community:latest
     restart: always
     ports:
       - '3000:3000'
@@ -16,6 +16,12 @@ services:
     environment:
       - TZ=${TIMEZONE}
       - NEXT_ENV_IMAGES_ALL_REMOTE=true
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
+      - NO_PROXY=*
+      - no_proxy=*
     networks:
       - teable-standalone
     depends_on:
