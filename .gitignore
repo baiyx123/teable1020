@@ -72,3 +72,6 @@ pnpm-debug.log*
 
 **/.assetsclash.out
 build.log
+
+index.html
+nohup.out

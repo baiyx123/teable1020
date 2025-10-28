@@ -43,6 +43,7 @@ export const LinkEditor = (props: ILinkEditorProps) => {
   const { toast } = useToast();
   const listRef = useRef<ILinkListRef>(null);
   const linkEditorMainRef = useRef<ILinkEditorMainRef>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isEditing, setEditing] = useState<boolean>(false);
   const [values, setValues] = useState<ILinkCellValue[]>();
   const [expandRecordId, setExpandRecordId] = useState<string>();
@@ -155,6 +156,7 @@ export const LinkEditor = (props: ILinkEditorProps) => {
         ))}
       {!readonly && (
         <>
+          <div ref={containerRef} />
           <div className="flex justify-between">
             <Dialog open={isEditing} onOpenChange={onOpenChange}>
               <DialogTrigger asChild>
@@ -163,10 +165,16 @@ export const LinkEditor = (props: ILinkEditorProps) => {
                   {t('editor.link.selectRecord')}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="flex h-[520px] max-w-4xl flex-col">
+              <DialogContent
+                container={containerRef.current}
+                className="flex h-[520px] max-w-4xl flex-col"
+                onMouseDown={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+              >
                 <LinkEditorMain
                   {...props}
                   ref={linkEditorMainRef}
+                  container={containerRef.current || undefined}
                   isEditing={isEditing}
                   setEditing={setEditing}
                 />

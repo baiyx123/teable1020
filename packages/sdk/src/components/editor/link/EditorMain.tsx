@@ -178,7 +178,7 @@ const LinkEditorInnerBase: ForwardRefRenderFunction<ILinkEditorMainRef, ILinkEdi
         />
       </div>
       <div className="flex justify-between">
-        <CreateRecordModal>
+        <CreateRecordModal container={props.container}>
           <Button variant="ghost">
             <Plus className="size-4" />
             {t('editor.link.create')}

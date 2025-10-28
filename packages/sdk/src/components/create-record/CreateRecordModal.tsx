@@ -15,10 +15,11 @@ import { RecordEditor } from '../expand-record/RecordEditor';
 interface ICreateRecordModalProps {
   children?: React.ReactNode;
   callback?: (recordId: string) => void;
+  container?: HTMLElement;
 }
 
 export const CreateRecordModal = (props: ICreateRecordModalProps) => {
-  const { children, callback } = props;
+  const { children, callback, container } = props;
   const tableId = useTableId();
   const baseId = useBaseId();
   const viewId = useViewId();
@@ -156,9 +157,12 @@ export const CreateRecordModal = (props: ICreateRecordModalProps) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
+        container={container}
         closeable={false}
         className="flex h-full max-w-3xl flex-col p-0 pt-6"
         style={{ width: 'calc(100% - 40px)', height: 'calc(100% - 100px)' }}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
         onMouseDown={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
       >
