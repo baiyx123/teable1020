@@ -6,5 +6,6 @@ export * from './FilterCheckBox';
 export * from './filter-link';
 export * from './FileTypeSelect';
 export * from './FilterUserSelect';
+export * from './FilterDepartmentSelect';
 export * from './DefaultErrorLabel';
 export * from './base';

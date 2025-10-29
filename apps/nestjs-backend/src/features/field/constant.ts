@@ -9,6 +9,8 @@ export interface IVisualTableDefaultField {
   __last_modified_time?: Date;
   __created_by: string;
   __last_modified_by?: string;
+  __created_by_department?: string;
+  __last_modified_by_department?: string;
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -20,6 +22,8 @@ export const preservedDbFieldNames = new Set([
   '__last_modified_time',
   '__created_by',
   '__last_modified_by',
+  '__created_by_department',
+  '__last_modified_by_department',
 ]);
 
 export const systemDbFieldNames = new Set([
@@ -29,6 +33,8 @@ export const systemDbFieldNames = new Set([
   '__last_modified_time',
   '__created_by',
   '__last_modified_by',
+  '__created_by_department',
+  '__last_modified_by_department',
 ]);
 
 export const systemFieldTypes = new Set([
@@ -37,4 +43,6 @@ export const systemFieldTypes = new Set([
   FieldType.LastModifiedTime,
   FieldType.CreatedBy,
   FieldType.LastModifiedBy,
+  FieldType.CreatedByDepartment,
+  FieldType.LastModifiedByDepartment,
 ]);

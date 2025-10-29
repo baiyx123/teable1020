@@ -1,6 +1,11 @@
 import https from 'https';
 import { join } from 'path';
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import {
   generateAccountId,
   generateSpaceId,
@@ -243,25 +248,22 @@ export class UserService {
   }
 
   // 设置用户主部门
-  async setPrimaryDepartment(userId: string, departmentId: string) {
-    const dept = await this.prismaService.txClient().department.findUnique({
-      where: { id: departmentId },
-    });
-
-    if (!dept) {
-      throw new NotFoundException('部门不存在');
+  async setPrimaryDepartment(
+    userId: string,
+    departmentId: string,
+    departmentName: string,
+    departmentCode: string,
+  ) {
+    if (!departmentId || !departmentName || !departmentCode) {
+      throw new BadRequestException('部门信息不完整');
     }
 
-    if (dept.status !== 'active') {
-      throw new BadRequestException('只能设置活跃状态的部门');
-    }
-
-    return await this.prismaService.txClient().user.update({
+    await this.prismaService.txClient().user.update({
       where: { id: userId },
       data: {
-        primaryDepartmentId: dept.id,
-        primaryDepartmentName: dept.name,
-        primaryDepartmentCode: dept.code,
+        primaryDepartmentId: departmentId,
+        primaryDepartmentName: departmentName,
+        primaryDepartmentCode: departmentCode,
       },
     });
   }
@@ -414,6 +416,9 @@ export class UserService {
         name: true,
         email: true,
         avatar: true,
+        primaryDepartmentId: true,
+        primaryDepartmentName: true,
+        primaryDepartmentCode: true,
       },
     });
     return userList.map((user) => {

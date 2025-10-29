@@ -47,6 +47,12 @@ export const useFieldTypeSubtitle = () => {
           return t('table:field.subTitle.autoNumber');
         case FieldType.Button:
           return t('table:field.subTitle.button');
+        case FieldType.Department:
+          return t('table:field.subTitle.department');
+        case FieldType.CreatedByDepartment:
+          return t('table:field.subTitle.createdByDepartment');
+        case FieldType.LastModifiedByDepartment:
+          return t('table:field.subTitle.lastModifiedByDepartment');
         default: {
           assertNever(fieldType);
         }

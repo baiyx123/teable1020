@@ -218,4 +218,6 @@ export const ReactQueryKeys = {
   chatHistory: (baseId: string) => ['chat-history', baseId] as const,
 
   recentlyBase: () => ['recently-base'] as const,
+
+  departmentList: () => ['department-list'] as const,
 };

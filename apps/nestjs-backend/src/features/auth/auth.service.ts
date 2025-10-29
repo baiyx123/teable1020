@@ -18,14 +18,22 @@ export class AuthService {
   ) {}
 
   async getUserInfo(user: IUserMeVo): Promise<IUserInfoVo> {
-    const res = pick(user, ['id', 'email', 'avatar', 'name']);
+    const res: IUserInfoVo = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      primaryDepartmentId: user.primaryDepartmentId,
+      primaryDepartmentName: user.primaryDepartmentName,
+      primaryDepartmentCode: user.primaryDepartmentCode,
+    };
     const accessTokenId = this.cls.get('accessTokenId');
     if (!accessTokenId) {
       return res;
     }
     const { scopes } = await this.permissionService.getAccessToken(accessTokenId);
     if (!scopes.includes('user|email_read')) {
-      return omit(res, 'email');
+      return omit(res, 'email') as IUserInfoVo;
     }
     return res;
   }

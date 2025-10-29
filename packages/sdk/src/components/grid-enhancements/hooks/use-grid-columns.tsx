@@ -506,6 +506,22 @@ export const useCreateCellValue2GridDisplay = (
               ),
             };
           }
+          case FieldType.Department:
+          case FieldType.CreatedByDepartment:
+          case FieldType.LastModifiedByDepartment: {
+            const deptText = cellValue 
+              ? (Array.isArray(cellValue) 
+                  ? cellValue.map((d: any) => d.name).join(', ') 
+                  : (cellValue as any).name) 
+              : '';
+            return {
+              ...baseCellProps,
+              type: CellType.Text,
+              data: deptText,
+              displayData: deptText,
+              readonly: true,
+            };
+          }
           case FieldType.Button: {
             return {
               ...baseCellProps,

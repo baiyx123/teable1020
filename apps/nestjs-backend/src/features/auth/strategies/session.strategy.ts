@@ -37,6 +37,8 @@ export class SessionStrategy extends PassportStrategy(PassportSessionStrategy) {
     this.cls.set('user.name', user.name);
     this.cls.set('user.email', user.email);
     this.cls.set('user.isAdmin', user.isAdmin);
+    this.cls.set('user.departmentId', user.primaryDepartmentId);
+    
     return pickUserMe(user);
   }
 }

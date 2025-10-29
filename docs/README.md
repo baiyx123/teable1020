@@ -48,3 +48,4 @@ docker logs standalone-teable-1 | grep -E '"level":(50|60)'
 有问题或建议？欢迎反馈！
 
 
+

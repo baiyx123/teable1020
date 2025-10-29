@@ -400,6 +400,9 @@ export function getValidFilterOperators(field: {
     case FieldType.User:
     case FieldType.CreatedBy:
     case FieldType.LastModifiedBy:
+    case FieldType.Department:
+    case FieldType.CreatedByDepartment:
+    case FieldType.LastModifiedByDepartment:
     case FieldType.Link: {
       operationSet = isMultipleCellValue
         ? [hasAnyOf.value, hasAllOf.value, isExactly.value, hasNoneOf.value, isNotExactly.value]

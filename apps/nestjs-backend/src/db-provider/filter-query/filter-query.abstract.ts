@@ -153,7 +153,8 @@ export abstract class AbstractFilterQuery implements IFilterQueryInterface {
     const field = this.fields?.[fieldId];
     if (!field) return false;
 
-    this.replaceMeTagInValue(filterItem, field, replaceUserId);
+    const replaceDepartmentId = this.extra?.withUserDepartmentId;
+    this.replaceMeTagInValue(filterItem, field, replaceUserId, replaceDepartmentId);
 
     return this.shouldKeepFilterItem(value, field, operator);
   }
@@ -161,10 +162,12 @@ export abstract class AbstractFilterQuery implements IFilterQueryInterface {
   private replaceMeTagInValue(
     filterItem: IFilterItem,
     field: IFieldInstance,
-    replaceUserId?: string
+    replaceUserId?: string,
+    replaceDepartmentId?: string
   ): void {
     const { value } = filterItem;
 
+    // 用户字段:替换为用户ID
     if (
       [FieldType.User, FieldType.CreatedBy, FieldType.LastModifiedBy].includes(field.type) &&
       replaceUserId
@@ -174,6 +177,30 @@ export abstract class AbstractFilterQuery implements IFilterQueryInterface {
         : isMeTag(value as string)
           ? replaceUserId
           : value;
+    }
+
+    // 部门字段:替换为部门ID
+    if (
+      [FieldType.Department, FieldType.CreatedByDepartment, FieldType.LastModifiedByDepartment].includes(field.type)
+    ) {
+      const hasMe = Array.isArray(value)
+        ? value.some((v) => isMeTag(v as string))
+        : isMeTag(value as string);
+
+      // 如果包含Me标签但用户没有部门ID,记录日志并保留原值(这样查询会返回空结果)
+      if (hasMe && !replaceDepartmentId) {
+        this.logger.warn(
+          `部门字段过滤使用了"我的部门"标签,但当前用户没有设置主部门。字段: ${field.name}, 用户可能需要在个人设置中设置主部门。`
+        );
+      }
+
+      if (replaceDepartmentId) {
+        filterItem.value = Array.isArray(value)
+          ? (value.map((v) => (isMeTag(v as string) ? replaceDepartmentId : v)) as ILiteralValueList)
+          : isMeTag(value as string)
+            ? replaceDepartmentId
+            : value;
+      }
     }
   }
 

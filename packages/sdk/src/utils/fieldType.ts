@@ -18,6 +18,9 @@ export const FIELD_TYPE_ORDER = [
   FieldType.LastModifiedTime,
   FieldType.CreatedBy,
   FieldType.LastModifiedBy,
+  FieldType.Department,
+  FieldType.CreatedByDepartment,
+  FieldType.LastModifiedByDepartment,
   FieldType.AutoNumber,
   FieldType.Button,
 ];

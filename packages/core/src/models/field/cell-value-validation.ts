@@ -6,6 +6,7 @@ import {
   autoNumberCellValueSchema,
   buttonFieldCelValueSchema,
   dataFieldCellValueSchema,
+  departmentCellValueSchema,
   getFormulaCellValueSchema,
   linkCellValueSchema,
   numberCellValueSchema,
@@ -56,6 +57,10 @@ export const validateCellValue = (field: IFieldVo, cellValue: unknown) => {
     }
     case FieldType.Button:
       return validateWithSchema(buttonFieldCelValueSchema, cellValue);
+    case FieldType.Department:
+    case FieldType.CreatedByDepartment:
+    case FieldType.LastModifiedByDepartment:
+      return validateWithSchema(departmentCellValueSchema, cellValue);
     default:
       assertNever(type);
   }

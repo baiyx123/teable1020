@@ -5,12 +5,19 @@ import { getPublicFullStorageUrl } from '../attachments/plugins/utils';
 
 export type IPickUserMe = Pick<
   Prisma.UserGetPayload<null>,
-  'id' | 'name' | 'avatar' | 'phone' | 'email' | 'password' | 'notifyMeta' | 'isAdmin'
+  'id' | 'name' | 'avatar' | 'phone' | 'email' | 'password' | 'notifyMeta' | 'isAdmin' | 'primaryDepartmentId' | 'primaryDepartmentName' | 'primaryDepartmentCode'
 >;
 
 export const pickUserMe = (user: IPickUserMe): IUserMeVo => {
   return {
-    ...pick(user, 'id', 'name', 'phone', 'email', 'isAdmin'),
+    id: user.id,
+    name: user.name,
+    phone: user.phone,
+    email: user.email,
+    isAdmin: user.isAdmin,
+    primaryDepartmentId: user.primaryDepartmentId,
+    primaryDepartmentName: user.primaryDepartmentName,
+    primaryDepartmentCode: user.primaryDepartmentCode,
     notifyMeta: typeof user.notifyMeta === 'object' ? user.notifyMeta : JSON.parse(user.notifyMeta),
     avatar:
       user.avatar && !user.avatar?.startsWith('http')

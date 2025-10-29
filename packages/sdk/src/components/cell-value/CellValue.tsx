@@ -99,6 +99,13 @@ export const CellValue = (props: ICellValueContainer) => {
         />
       );
     }
+    case FieldType.Department:
+    case FieldType.CreatedByDepartment:
+    case FieldType.LastModifiedByDepartment: {
+      const deptValue = value as any;
+      const deptText = deptValue ? (Array.isArray(deptValue) ? deptValue.map((d) => d.name).join(', ') : deptValue.name) : '';
+      return <span className={className}>{deptText}</span>;
+    }
     case FieldType.Attachment: {
       return (
         <CellAttachment

@@ -34,6 +34,7 @@ export const FIELD_TYPE_ORDER1 = [
   FieldType.SingleSelect,
   FieldType.MultipleSelect,
   FieldType.User,
+  FieldType.Department,
   FieldType.Date,
   FieldType.Rating,
   FieldType.Checkbox,
@@ -46,6 +47,8 @@ export const FIELD_TYPE_ORDER1 = [
   FieldType.LastModifiedTime,
   FieldType.CreatedBy,
   FieldType.LastModifiedBy,
+  FieldType.CreatedByDepartment,
+  FieldType.LastModifiedByDepartment,
   FieldType.AutoNumber,
 ];
 
@@ -56,6 +59,7 @@ const BASE_FIELD_TYPE = [
   FieldType.SingleSelect,
   FieldType.MultipleSelect,
   FieldType.User,
+  FieldType.Department,
   FieldType.Date,
   FieldType.Rating,
   FieldType.Checkbox,
@@ -75,6 +79,8 @@ const SYSTEM_FIELD_TYPE_ORDER = [
   FieldType.LastModifiedTime,
   FieldType.CreatedBy,
   FieldType.LastModifiedBy,
+  FieldType.CreatedByDepartment,
+  FieldType.LastModifiedByDepartment,
 ];
 
 const fieldTypeItem = (

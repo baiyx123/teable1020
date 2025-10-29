@@ -63,8 +63,15 @@ export class UserController {
   }
 
   @Patch('primary-department')
-  async setPrimaryDepartment(@Body() body: { departmentId: string }): Promise<void> {
+  async setPrimaryDepartment(
+    @Body() body: { departmentId: string; departmentName: string; departmentCode: string },
+  ): Promise<void> {
     const userId = this.cls.get('user.id');
-    return this.userService.setPrimaryDepartment(userId, body.departmentId);
+    await this.userService.setPrimaryDepartment(
+      userId,
+      body.departmentId,
+      body.departmentName,
+      body.departmentCode,
+    );
   }
 }

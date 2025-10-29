@@ -1,9 +1,10 @@
 import { z } from 'zod';
-import { CellValueType, DbFieldType, FieldType } from '../constant';
+import { CellValueType, DbFieldType } from '../constant';
+import type { FieldType } from '../constant';
 import { FieldCore } from '../field';
 
 // 部门字段选项
-export const departmentFieldOptionsSchema = z.object({}).optional();
+export const departmentFieldOptionsSchema = z.object({}).strict();
 
 export type IDepartmentFieldOptions = z.infer<typeof departmentFieldOptionsSchema>;
 
@@ -14,6 +15,12 @@ export interface IDepartmentCellValue {
   code: string;
 }
 
+export const departmentCellValueSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  code: z.string(),
+});
+
 export class DepartmentFieldCore extends FieldCore {
   type!: FieldType.Department;
 
@@ -21,7 +28,7 @@ export class DepartmentFieldCore extends FieldCore {
 
   dbFieldType = DbFieldType.Json;
 
-  options?: IDepartmentFieldOptions;
+  options!: IDepartmentFieldOptions;
 
   isComputed = false;
 
@@ -48,8 +55,12 @@ export class DepartmentFieldCore extends FieldCore {
 
     // 验证格式
     if (typeof value === 'object' && value !== null) {
-      const dept = value as any;
-      if (dept.id && dept.name && dept.code) {
+      const dept = value as Record<string, unknown>;
+      if (
+        typeof dept.id === 'string' &&
+        typeof dept.name === 'string' &&
+        typeof dept.code === 'string'
+      ) {
         return {
           id: dept.id,
           name: dept.name,
@@ -76,7 +87,7 @@ export class DepartmentFieldCore extends FieldCore {
       code: z.string(),
     });
 
-    return schema.safeParse(value) as any;
+    return schema.safeParse(value);
   }
 
   eq(value: unknown, other: unknown): boolean {

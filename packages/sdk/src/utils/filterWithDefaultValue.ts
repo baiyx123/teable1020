@@ -90,7 +90,9 @@ export const generateValueByFilteredField = ({
       }
       return null;
     }
-    case FieldType.User: {
+    case FieldType.User:
+    case FieldType.CreatedBy:
+    case FieldType.LastModifiedBy: {
       if (isMultipleCellValue) {
         return (value as string[])?.map((v) => {
           const id = isMeTag(v) ? currentUserId : v;
@@ -100,11 +102,22 @@ export const generateValueByFilteredField = ({
       const id = isMeTag(value as string) ? currentUserId : (value as string);
       return userMap[id] ?? { title: '', id };
     }
+    case FieldType.Department:
+    case FieldType.CreatedByDepartment:
+    case FieldType.LastModifiedByDepartment:
+      return value;
     case FieldType.Link: {
       return isMultipleCellValue
         ? (value as string[])?.map((v) => linkMap[v] ?? { title: '', id: v })
         : linkMap[value as string] ?? { title: '', id: value };
     }
+    case FieldType.CreatedTime:
+    case FieldType.LastModifiedTime:
+    case FieldType.AutoNumber:
+    case FieldType.Formula:
+    case FieldType.Rollup:
+    case FieldType.Button:
+      return value;
     default:
       assertNever(type as never);
   }

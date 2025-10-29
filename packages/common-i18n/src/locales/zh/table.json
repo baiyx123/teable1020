@@ -128,6 +128,15 @@
       "lastModifiedBy": {
         "title": "修改人"
       },
+      "department": {
+        "title": "部门"
+      },
+      "createdByDepartment": {
+        "title": "创建部门"
+      },
+      "lastModifiedByDepartment": {
+        "title": "修改部门"
+      },
       "rating": {
         "title": "评分"
       },
@@ -281,6 +290,9 @@
       "lastModifiedTime": "查看每条记录的最近编辑日期和时间。",
       "createdBy": "查看创建记录的用户。",
       "lastModifiedBy": "查看每条记录的最近编辑的用户。",
+      "department": "记录所属部门信息。",
+      "createdByDepartment": "查看创建记录的用户所属部门。",
+      "lastModifiedByDepartment": "查看最近编辑记录的用户所属部门。",
       "autoNumber": "为每条记录自动生成唯一的递增数字。",
       "button": "触发自定义操作。",
       "lookup": "通过绑定一个关联字段，从关联表中查找已关联记录的信息。"

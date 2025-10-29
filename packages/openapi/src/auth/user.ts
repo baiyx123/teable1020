@@ -10,6 +10,9 @@ export const userInfoVoSchema = z.object({
   name: z.string(),
   avatar: z.string().optional().nullable(),
   email: z.string().email().optional(),
+  primaryDepartmentId: z.string().optional().nullable(),
+  primaryDepartmentName: z.string().optional().nullable(),
+  primaryDepartmentCode: z.string().optional().nullable(),
 });
 
 export type IUserInfoVo = z.infer<typeof userInfoVoSchema>;

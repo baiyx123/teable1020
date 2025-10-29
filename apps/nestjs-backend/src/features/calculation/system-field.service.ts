@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Injectable } from '@nestjs/common';
-import type { FieldKeyType } from '@teable/core';
+import type { FieldKeyType, IDepartmentCellValue } from '@teable/core';
 import { FieldType } from '@teable/core';
 import { PrismaService } from '@teable/db-main-prisma';
 import { Knex } from 'knex';
@@ -111,12 +111,12 @@ export class SystemFieldService {
       },
     });
 
-    let deptCellValue = null;
+    let deptCellValue: IDepartmentCellValue | null = null;
     if (userDept?.primaryDepartmentId) {
       deptCellValue = {
         id: userDept.primaryDepartmentId,
-        name: userDept.primaryDepartmentName,
-        code: userDept.primaryDepartmentCode,
+        name: userDept.primaryDepartmentName!,
+        code: userDept.primaryDepartmentCode!,
       };
     }
 

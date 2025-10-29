@@ -15,9 +15,11 @@ import { instanceToPlain } from 'class-transformer';
 import { Knex } from 'knex';
 import { difference, groupBy, isEmpty, isEqual, keyBy, uniq } from 'lodash';
 import { InjectModel } from 'nest-knexjs';
+import { ClsService } from 'nestjs-cls';
 import { CustomHttpException } from '../../custom.exception';
 import { InjectDbProvider } from '../../db-provider/db.provider';
 import { IDbProvider } from '../../db-provider/db.provider.interface';
+import type { IClsStore } from '../../types/cls';
 import { Timing } from '../../utils/timing';
 import { preservedDbFieldNames } from '../field/constant';
 import type { IFieldInstance } from '../field/model/factory';
@@ -91,7 +93,8 @@ export class ReferenceService {
     private readonly batchService: BatchService,
     private readonly prismaService: PrismaService,
     @InjectModel('CUSTOM_KNEX') private readonly knex: Knex,
-    @InjectDbProvider() private readonly dbProvider: IDbProvider
+    @InjectDbProvider() private readonly dbProvider: IDbProvider,
+    private readonly cls: ClsService<IClsStore>
   ) {}
 
   /**
@@ -245,7 +248,15 @@ export class ReferenceService {
 
     const users = await this.prismaService.user.findMany({
       where: { id: { in: userIds } },
-      select: { id: true, email: true, name: true, avatar: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        avatar: true,
+        primaryDepartmentId: true,
+        primaryDepartmentName: true,
+        primaryDepartmentCode: true,
+      },
     });
 
     return keyBy(users, 'id');
@@ -552,6 +563,23 @@ export class ReferenceService {
 
     if (field.type === FieldType.CreatedBy || field.type === FieldType.LastModifiedBy) {
       return this.calculateUser(field, record, userMap);
+    }
+
+    // CreatedByDepartment 和 LastModifiedByDepartment 直接从系统字段读取,不需要计算
+    if (
+      field.type === FieldType.CreatedByDepartment ||
+      field.type === FieldType.LastModifiedByDepartment
+    ) {
+      const deptJson =
+        field.type === FieldType.CreatedByDepartment
+          ? record.createdByDepartment
+          : record.lastModifiedByDepartment;
+
+      if (!deptJson) {
+        return null;
+      }
+
+      return field.convertDBValue2CellValue(deptJson);
     }
 
     if (
@@ -942,6 +970,8 @@ export class ReferenceService {
       lastModifiedTime: (raw.__last_modified_time as Date)?.toISOString(),
       createdBy: raw.__created_by as string,
       lastModifiedBy: raw.__last_modified_by as string,
+      createdByDepartment: raw.__created_by_department as string,
+      lastModifiedByDepartment: raw.__last_modified_by_department as string,
     };
   }
 
@@ -1229,8 +1259,13 @@ export class ReferenceService {
       query
         .with('filtered_records', (qb) => {
           const dataTableName = tableId2DbTableName[options.foreignTableId];
+          const userId = this.cls.get('user.id');
+          const userDepartmentId = this.cls.get('user.departmentId');
           qb.select('__id').from(dataTableName);
-          dbProvider.filterQuery(qb, fieldMap, field.lookupOptions!.filter).appendQueryBuilder();
+          dbProvider.filterQuery(qb, fieldMap, field.lookupOptions!.filter, {
+            withUserId: userId,
+            withUserDepartmentId: userDepartmentId ?? undefined,
+          }).appendQueryBuilder();
         })
         // Get valid pairs (where fromId passes filter)
         .with('valid_pairs', (qb) => {

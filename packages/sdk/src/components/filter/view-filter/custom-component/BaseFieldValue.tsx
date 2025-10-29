@@ -8,6 +8,7 @@ import {
   FileTypeSelect,
   FilterCheckbox,
   FilterDatePicker,
+  FilterDepartmentSelect,
   FilterInput,
   FilterLink,
   FilterMultipleSelect,
@@ -180,6 +181,22 @@ export function BaseFieldValue(props: IBaseFieldValue) {
         return <UserComponents {...props} />;
       }
       return <FilterUserSelect {...props} modal={modal} />;
+    }
+    case FieldType.Department:
+    case FieldType.CreatedByDepartment:
+    case FieldType.LastModifiedByDepartment: {
+      const props = {
+        field,
+        onSelect: (value: string[] | string | null) =>
+          onSelect(value?.length ? (value as IFilterItem['value']) : null),
+        value: value as string[],
+        operator: operator,
+      };
+      if (components && components[FieldType.Department]) {
+        const DepartmentComponents = components[FieldType.Department];
+        return <DepartmentComponents {...props} />;
+      }
+      return <FilterDepartmentSelect {...props} modal={modal} />;
     }
     case FieldType.Rollup:
     case FieldType.Formula: {

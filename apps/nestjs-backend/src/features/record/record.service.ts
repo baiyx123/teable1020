@@ -544,8 +544,9 @@ export class RecordService {
     const { dbTableName, queryBuilder, viewCte, filter, search, orderBy, groupBy, fieldMap } =
       await this.prepareQuery(tableId, query);
 
-    // Retrieve the current user's ID to build user-related query conditions
+    // Retrieve the current user's ID and department ID to build user-related query conditions
     const currentUserId = this.cls.get('user.id');
+    const currentUserDepartmentId = this.cls.get('user.departmentId');
 
     const viewQueryDbTableName = viewCte ?? dbTableName;
 
@@ -576,7 +577,10 @@ export class RecordService {
 
     // Add filtering conditions to the query builder
     this.dbProvider
-      .filterQuery(queryBuilder, fieldMap, filter, { withUserId: currentUserId })
+      .filterQuery(queryBuilder, fieldMap, filter, { 
+        withUserId: currentUserId,
+        withUserDepartmentId: currentUserDepartmentId ?? undefined,
+      })
       .appendQueryBuilder();
     // Add sorting rules to the query builder
     this.dbProvider
@@ -935,7 +939,7 @@ export class RecordService {
     });
 
     // 构建部门信息
-    let departmentInfo = null;
+    let departmentInfo: string | null = null;
     if (user?.primaryDepartmentId) {
       departmentInfo = JSON.stringify({
         id: user.primaryDepartmentId,
@@ -1039,7 +1043,7 @@ export class RecordService {
     });
 
     // 构建部门信息
-    let departmentInfo = null;
+    let departmentInfo: string | null = null;
     if (user?.primaryDepartmentId) {
       departmentInfo = JSON.stringify({
         id: user.primaryDepartmentId,
@@ -1070,13 +1074,29 @@ export class RecordService {
         const snapshot = records[i];
         const fields = snapshot.fields;
 
-        const dbFieldValueMap = validationFields.reduce(
+        // 处理所有字段的初始值,包括计算字段
+        const dbFieldValueMap = fieldRaws.reduce(
           (map, field) => {
             const dbFieldName = field.dbFieldName;
             const fieldKey = field[fieldKeyType];
-            const cellValue = fields[fieldKey];
-
-            map[dbFieldName] = cellValue;
+            
+            // 对于CreatedBy和CreatedByDepartment字段,设置初始值
+            if (field.type === 'createdBy') {
+              // CreatedBy字段直接从系统字段复制
+              map[dbFieldName] = JSON.stringify({
+                id: snapshot.createdBy || userId,
+                title: 'temp', // 将在后续计算中更新
+                email: 'temp',
+              });
+            } else if (field.type === 'createdByDepartment') {
+              // CreatedByDepartment字段从部门信息复制
+              map[dbFieldName] = departmentInfo;
+            } else if (field.notNull || field.unique || fields[fieldKey] !== undefined) {
+              // 其他字段:只有在notNull/unique或用户提供了值时才设置
+              const cellValue = fields[fieldKey];
+              map[dbFieldName] = cellValue;
+            }
+            
             return map;
           },
           {} as Record<string, unknown>

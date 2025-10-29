@@ -64,6 +64,12 @@ export const recordSchema = z.object({
   lastModifiedBy: z.string().optional().openapi({
     description: 'Last modified by, user name',
   }),
+  createdByDepartment: z.string().optional().openapi({
+    description: 'Created by department, department info JSON string',
+  }),
+  lastModifiedByDepartment: z.string().optional().openapi({
+    description: 'Last modified by department, department info JSON string',
+  }),
   permissions: z.record(z.string(), z.record(z.string(), z.boolean())).optional().openapi({
     description: 'Permissions for the record',
   }),

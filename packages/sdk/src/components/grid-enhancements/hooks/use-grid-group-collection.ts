@@ -281,6 +281,20 @@ const useGenerateGroupCellFn = () => {
               data: data,
             };
           }
+          case FieldType.Department:
+          case FieldType.CreatedByDepartment:
+          case FieldType.LastModifiedByDepartment: {
+            const deptText = cellValue 
+              ? (Array.isArray(cellValue) 
+                  ? cellValue.map((d: any) => d.name).join(', ') 
+                  : (cellValue as any).name) 
+              : '';
+            return {
+              type: CellType.Text,
+              data: deptText,
+              displayData: deptText,
+            };
+          }
           default: {
             return { type: CellType.Loading };
           }

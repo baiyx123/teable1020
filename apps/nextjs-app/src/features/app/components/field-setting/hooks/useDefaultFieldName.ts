@@ -72,6 +72,12 @@ export const useDefaultFieldName = () => {
           return t('field.default.checkbox.title');
         case FieldType.Button:
           return t('field.default.button.title');
+        case FieldType.Department:
+          return t('field.default.department.title');
+        case FieldType.CreatedByDepartment:
+          return t('field.default.createdByDepartment.title');
+        case FieldType.LastModifiedByDepartment:
+          return t('field.default.lastModifiedByDepartment.title');
         case FieldType.Link: {
           const foreignTable = tables.find(
             (table) => table.id === (fieldRo.options as ILinkFieldOptionsRo).foreignTableId

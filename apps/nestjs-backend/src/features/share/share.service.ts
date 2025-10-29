@@ -396,7 +396,12 @@ export class ShareService {
 
     this.dbProvider.shareFilterCollaboratorsQuery(queryBuilder, dbFieldName, isMultipleCellValue);
     queryBuilder.whereNotNull(dbFieldName);
-    this.dbProvider.filterQuery(queryBuilder, fieldMap, filter).appendQueryBuilder();
+    const userId = this.cls.get('user.id');
+    const userDepartmentId = this.cls.get('user.departmentId');
+    this.dbProvider.filterQuery(queryBuilder, fieldMap, filter, {
+      withUserId: userId,
+      withUserDepartmentId: userDepartmentId ?? undefined,
+    }).appendQueryBuilder();
 
     const resQuery = this.knex('users')
       .select('id', 'email', 'name', 'avatar')

@@ -17,6 +17,7 @@ import type { ISortQueryInterface } from './sort-query/sort-query.interface';
 
 export type IFilterQueryExtra = {
   withUserId?: string;
+  withUserDepartmentId?: string;
 
   [key: string]: unknown;
 };

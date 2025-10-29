@@ -11,6 +11,7 @@ export interface IClsStore extends ClsStore {
     name: string;
     email: string;
     isAdmin?: boolean | null;
+    departmentId?: string | null;
   };
   accessTokenId?: string;
   entry?: {

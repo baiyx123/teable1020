@@ -22,6 +22,7 @@ import {
   User as UserIcon,
   UserPlus as CreatedByIcon,
   UserEdit as LastModifiedByIcon,
+  Building2 as DepartmentIcon,
   EyeOff,
   MagicAi,
 } from '@teable/icons';
@@ -196,6 +197,24 @@ export const useFieldStaticGetter = () => {
               color: Colors.Teal,
             },
             Icon: getIcon(MousePointerClick),
+          };
+        case FieldType.Department:
+          return {
+            title: t('field.title.department'),
+            defaultOptions: {},
+            Icon: getIcon(DepartmentIcon),
+          };
+        case FieldType.CreatedByDepartment:
+          return {
+            title: t('field.title.createdByDepartment'),
+            defaultOptions: {},
+            Icon: getIcon(DepartmentIcon),
+          };
+        case FieldType.LastModifiedByDepartment:
+          return {
+            title: t('field.title.lastModifiedByDepartment'),
+            defaultOptions: {},
+            Icon: getIcon(DepartmentIcon),
           };
         default:
           throw new Error(`field type: ${type} has not define statics`);

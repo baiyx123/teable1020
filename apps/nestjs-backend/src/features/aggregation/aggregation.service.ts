@@ -471,8 +471,12 @@ export class AggregationService {
         const viewQueryDbTableName = viewCte ?? dbTableName;
         qb.select('*').from(viewQueryDbTableName);
         if (filter) {
+          const withUserDepartmentId = this.cls.get('user.departmentId');
           this.dbProvider
-            .filterQuery(qb, fieldInstanceMap, filter, { withUserId })
+            .filterQuery(qb, fieldInstanceMap, filter, { 
+              withUserId,
+              withUserDepartmentId: withUserDepartmentId ?? undefined,
+            })
             .appendQueryBuilder();
         }
         if (search && search[2]) {
@@ -542,8 +546,12 @@ export class AggregationService {
     queryBuilder.from(viewQueryDbTableName);
 
     if (filter) {
+      const withUserDepartmentId = this.cls.get('user.departmentId');
       this.dbProvider
-        .filterQuery(queryBuilder, fieldInstanceMap, filter, { withUserId })
+        .filterQuery(queryBuilder, fieldInstanceMap, filter, { 
+          withUserId,
+          withUserDepartmentId: withUserDepartmentId ?? undefined,
+        })
         .appendQueryBuilder();
     }
 

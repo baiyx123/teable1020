@@ -59,6 +59,12 @@ export class CellValueFilterSqlite extends AbstractCellValueFilter {
       const path = '$.id';
 
       return `json_extract(${object}, '${path}')`;
+    }
+    if ([FieldType.Department, FieldType.CreatedByDepartment, FieldType.LastModifiedByDepartment].includes(field.type)) {
+      const object = field.isMultipleCellValue ? defaultJsonColumn : field.dbFieldName;
+      const path = '$.id';
+
+      return `json_extract(${object}, '${path}')`;
     } else if (field.type === FieldType.Attachment) {
       return defaultJsonColumn;
     }

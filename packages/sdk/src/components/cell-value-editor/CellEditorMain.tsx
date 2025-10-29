@@ -209,6 +209,10 @@ export const CellEditorMain = (props: Omit<ICellValueEditor, 'wrapClassName' | '
         />
       );
     }
+    case FieldType.Department:
+    case FieldType.CreatedByDepartment:
+    case FieldType.LastModifiedByDepartment:
+      return null;
     case FieldType.Button: {
       return (
         <ButtonEditor

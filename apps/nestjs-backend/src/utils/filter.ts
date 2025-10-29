@@ -17,6 +17,9 @@ const SPECIAL_OPERATOR_FIELD_TYPE_SET = new Set([
   FieldType.User,
   FieldType.CreatedBy,
   FieldType.LastModifiedBy,
+  FieldType.Department,
+  FieldType.CreatedByDepartment,
+  FieldType.LastModifiedByDepartment,
   FieldType.Link,
 ]);
 
@@ -37,7 +40,7 @@ export const cellValue2FilterValue = (cellValue: unknown, field: IFieldInstance)
 
   if (
     cellValue == null ||
-    ![FieldType.User, FieldType.CreatedBy, FieldType.LastModifiedBy, FieldType.Link].includes(type)
+    ![FieldType.User, FieldType.CreatedBy, FieldType.LastModifiedBy, FieldType.Department, FieldType.CreatedByDepartment, FieldType.LastModifiedByDepartment, FieldType.Link].includes(type)
   )
     return cellValue;
 

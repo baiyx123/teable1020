@@ -137,6 +137,7 @@
     "linkInputPlaceholder": "Enter a value",
     "groupDescription": "Any of the following are true…",
     "currentUser": "Me (current user)",
+    "currentDepartment": "My Department (current user's department)",
     "tips": {
       "scope": "In this view, show records"
     },
@@ -299,7 +300,10 @@
       "lookup": "Lookup",
       "button": "Button",
       "createdBy": "Created by",
-      "lastModifiedBy": "Last modified by"
+      "lastModifiedBy": "Last modified by",
+      "department": "Department",
+      "createdByDepartment": "Created by department",
+      "lastModifiedByDepartment": "Last modified by department"
     },
     "link": {
       "oneWay": "One Way",

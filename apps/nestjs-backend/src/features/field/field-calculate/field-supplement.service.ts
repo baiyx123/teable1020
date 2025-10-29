@@ -1124,6 +1124,15 @@ export class FieldSupplementService {
         return this.prepareCheckboxField(fieldRo);
       case FieldType.Button:
         return this.prepareButtonField(fieldRo);
+      case FieldType.Department:
+      case FieldType.CreatedByDepartment:
+      case FieldType.LastModifiedByDepartment:
+        return {
+          ...fieldRo,
+          cellValueType: CellValueType.String,
+          dbFieldType: DbFieldType.Json,
+          isComputed: fieldRo.type !== FieldType.Department,
+        };
       default:
         throw new CustomHttpException(
           `Unsupported field type ${fieldRo.type}`,

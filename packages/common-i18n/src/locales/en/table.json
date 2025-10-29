@@ -127,6 +127,15 @@
       "lastModifiedBy": {
         "title": "Last modified by"
       },
+      "department": {
+        "title": "Department"
+      },
+      "createdByDepartment": {
+        "title": "Created by department"
+      },
+      "lastModifiedByDepartment": {
+        "title": "Last modified by department"
+      },
       "rating": {
         "title": "Rating"
       },
@@ -282,6 +291,9 @@
       "lastModifiedTime": "See the date and time of the most recent edit to some or all fields in a record.",
       "createdBy": "See which user created the record.",
       "lastModifiedBy": "See which user made the most recent edit to some or all fields in a record.",
+      "department": "Department information of the record.",
+      "createdByDepartment": "See which department the user who created the record belongs to.",
+      "lastModifiedByDepartment": "See which department the user who made the most recent edit belongs to.",
       "autoNumber": "Automatically generate unique incremental numbers for each record.",
       "button": "Trigger a customized action.",
       "lookup": "See values from a field in a linked record."

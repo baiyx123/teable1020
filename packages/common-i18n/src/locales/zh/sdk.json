@@ -151,6 +151,7 @@
     "linkInputPlaceholder": "输入值",
     "groupDescription": "以下任一条件为真…",
     "currentUser": "我（当前用户）",
+    "currentDepartment": "我的部门（当前用户部门）",
     "tips": {
       "scope": "仅作用于当前视图的记录"
     },
@@ -313,7 +314,10 @@
       "lookup": "从关联的表中查找",
       "button": "按钮",
       "createdBy": "创建人",
-      "lastModifiedBy": "最近修改人"
+      "lastModifiedBy": "最近修改人",
+      "department": "部门",
+      "createdByDepartment": "创建部门",
+      "lastModifiedByDepartment": "最近修改部门"
     },
     "link": {
       "oneWay": "单向",
